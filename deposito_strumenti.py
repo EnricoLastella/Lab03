@@ -13,7 +13,7 @@ class DepositoStrumenti:
     @property
     def responsabile(self):
 
-        return self.responsabile
+        return self._responsabile
 
     @responsabile.setter
     def responsabile(self, nuovo_responsabile):
@@ -31,8 +31,8 @@ class DepositoStrumenti:
                     codice = riga[0].strip()
                     tipo = riga[1].strip()
                     marca = riga[2].strip()
-                    anno_acquisto = riga[3].strip()
-                    valore = riga[4].strip()
+                    anno_acquisto = int(riga[3].strip())
+                    valore = float(riga[4].strip())
 
                     nuovo_strumento = Strumento(codice, tipo, marca, anno_acquisto, valore)
 
@@ -69,12 +69,45 @@ class DepositoStrumenti:
 
     def nuovo_prestito(self, data, id_strumento, cognome_allievo):
         """Crea un nuovo prestito"""
+        strumento_esiste = False
+        for s in self.strumenti:
+            if s.codice == id_strumento:
+                strumento_esiste = True
+                break
 
+        if strumento_esiste == False:
+            raise Exception("Strumento non esistente")
+
+        for p in self.prestiti:
+            if p.id_strumento == id_strumento:
+                raise Exception("Errore: lo strumento è già attualmente in prestito.")
+
+
+        if len(self.prestiti) == 0:
+            nuovo_codice = "P1"
+        else:
+            ultimo_prestito = self.prestiti[-1]
+            ultimo_codice = ultimo_prestito.codice
+
+            ultimo_numero = int(ultimo_codice[1:])
+
+            nuovo_codice = "P" +str(ultimo_numero+1)
+
+        nuovo_prestito = Prestito(nuovo_codice, data, id_strumento, cognome_allievo)
+
+        self.prestiti.append(nuovo_prestito)
+
+        return nuovo_prestito
 
 
     def termina_prestito(self, id_prestito):
         """Termina un prestito in atto"""
-        # TODO
+        for prestito in self.prestiti:
+
+            if id_prestito == prestito.codice:
+                self.prestiti.remove(prestito)
+                return True
+        raise Exception(f"Prestito non esistente con ID:{id_prestito}")
 
 class Strumento:
     def __init__(self, codice, tipo, marca, anno_acquisto, valore):
